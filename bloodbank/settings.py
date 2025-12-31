@@ -25,7 +25,10 @@ SECRET_KEY = 'django-insecure-76ytwuo4+l662h1t0pf-bb10x^bwkyufc)*=^)lvjpct0(ph0w
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = [
+    'blood-bank-5fnn.onrender.com',
+    'www.blood-bank-5fnn.onrender.com',
+]
 
 
 # Application definition
