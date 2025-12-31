@@ -56,7 +56,17 @@ def logout_view(request):
 
 import random
 from django.core.mail import send_mail
-
+def send_otp_email(subject, message, recipient):
+    try:
+        send_mail(
+            subject,
+            message,
+            settings.EMAIL_HOST_USER,
+            [recipient],
+            fail_silently=False
+        )
+    except Exception as e:
+        print("EMAIL ERROR:", e)
 # Store OTP temporarily (for simplicity, session)
 def forgot_password(request):
     if request.method == 'POST':
