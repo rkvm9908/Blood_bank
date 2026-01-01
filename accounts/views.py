@@ -1,7 +1,11 @@
+import random
+import threading
 from django.shortcuts import render, redirect
-from django.contrib.auth.models import User
-from django.contrib.auth import authenticate, login, logout
 from django.contrib import messages
+from django.contrib.auth.models import User
+from django.core.mail import send_mail
+from django.conf import settings
+from django.contrib.auth import authenticate, login, logout
 from .models import UserProfile
 
 
@@ -64,67 +68,82 @@ def logout_view(request):
 
 import random
 from django.core.mail import send_mail
-
+def send_otp_email(subject, message, recipient):
+    try:
+        send_mail(
+            subject,
+            message,
+            settings.EMAIL_HOST_USER,
+            [recipient],
+            fail_silently=False
+        )
+    except Exception as e:
+        print("EMAIL ERROR:", e)
 # Store OTP temporarily (for simplicity, session)
 def forgot_password(request):
     if request.method == 'POST':
-        email = request.POST['email']
+        email = request.POST.get('email')
+
         try:
             user = User.objects.get(email=email)
-            otp = random.randint(100000, 999999)
-            request.session['otp'] = otp
-            request.session['reset_user'] = user.id
-
-            # Send OTP email
-            send_mail(
-                'Password Reset OTP',
-                f'Your OTP for password reset is {otp}',
-                'admin@bloodbank.com',
-                [email],
-                fail_silently=False
-            )
-            messages.success(request, f'OTP sent to {email}')
-            return redirect('verify_otp')
         except User.DoesNotExist:
-            messages.error(request, "Email not found!")
+            messages.error(request, "Email not registered")
+            return redirect('forgot_password')
+
+        otp = random.randint(100000, 999999)
+
+        # store in session
+        request.session['reset_email'] = email
+        request.session['reset_otp'] = str(otp)
+
+        subject = "Blood Bank Password Reset OTP"
+        message = f"Your OTP is {otp}. Valid for 5 minutes."
+
+        # 🔥 async email (NO BLOCKING)
+        threading.Thread(
+            target=send_otp_email,
+            args=(subject, message, email)
+        ).start()
+
+        messages.success(request, "OTP sent to your email")
+        return redirect('verify_otp')
 
     return render(request, 'accounts/forgot_password.html')
 
 
 def verify_otp(request):
     if request.method == 'POST':
-        entered_otp = request.POST['otp']
-        otp = str(request.session.get('otp'))
-        if entered_otp == otp:
-            messages.success(request, "OTP verified! Please reset your password.")
+        entered_otp = request.POST.get('otp')
+        session_otp = request.session.get('reset_otp')
+
+        if entered_otp == session_otp:
+            messages.success(request, "OTP verified. Set new password.")
             return redirect('reset_password')
         else:
-            messages.error(request, "Invalid OTP!")
+            messages.error(request, "Invalid OTP")
+            return redirect('verify_otp')
 
     return render(request, 'accounts/verify_otp.html')
 
 
 def reset_password(request):
     if request.method == 'POST':
-        password = request.POST['password']
-        confirm_password = request.POST['confirm_password']
+        password = request.POST.get('password')
+        confirm = request.POST.get('confirm')
 
-        if password != confirm_password:
-            messages.error(request, "Passwords do not match!")
+        if password != confirm:
+            messages.error(request, "Passwords do not match")
             return redirect('reset_password')
 
-        user_id = request.session.get('reset_user')
-        if user_id:
-            user = User.objects.get(id=user_id)
-            user.set_password(password)
-            user.save()
-            # Clear session
-            request.session.pop('otp', None)
-            request.session.pop('reset_user', None)
-            messages.success(request, "Password reset successful! Please login.")
-            return redirect('login')
-        else:
-            messages.error(request, "Session expired. Try again.")
-            return redirect('forgot_password')
+        email = request.session.get('reset_email')
+        user = User.objects.get(email=email)
+        user.set_password(password)
+        user.save()
+
+        # cleanup session
+        request.session.flush()
+
+        messages.success(request, "Password reset successful. Login now.")
+        return redirect('login')
 
     return render(request, 'accounts/reset_password.html')

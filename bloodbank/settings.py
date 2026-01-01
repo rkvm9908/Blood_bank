@@ -25,7 +25,10 @@ SECRET_KEY = 'django-insecure-76ytwuo4+l662h1t0pf-bb10x^bwkyufc)*=^)lvjpct0(ph0w
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = [
+    'blood-bank-5fnn.onrender.com',
+    'www.blood-bank-5fnn.onrender.com',
+]
 
 
 # Application definition
@@ -115,13 +118,13 @@ USE_I18N = True
 USE_TZ = True
 
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST = 'smtp.gmail.com'
-EMAIL_PORT = 587
+EMAIL_HOST = os.environ.get('EMAIL_HOST', 'smtp.sendgrid.net')
+EMAIL_PORT = int(os.environ.get('EMAIL_PORT', 587))
 EMAIL_USE_TLS = True
-
-EMAIL_HOST_USER = 'srms1161@gmail.com'
-EMAIL_HOST_PASSWORD = 'hvgmnxvmbqkuqhda'
-
+EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER')
+EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD')
+DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
+EMAIL_TIMEOUT = 10
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
