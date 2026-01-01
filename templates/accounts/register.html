@@ -5,11 +5,6 @@
 <div class="card shadow mx-auto mt-5" style="max-width: 400px;">
     <div class="card-header bg-danger text-white text-center">Register</div>
     <div class="card-body">
-        {% if messages %}
-        {% for msg in messages %}
-        <div class="alert alert-warning">{{ msg }}</div>
-        {% endfor %}
-        {% endif %}
         <form method="POST">
             {% csrf_token %}
             <div class="mb-3">
@@ -17,7 +12,7 @@
                 <input type="text" class="form-control" id="username" name="username" required>
             </div>
             <div class="mb-3">
-                <label for="email" class="form-label">Email</label>
+                <label for="blood_group" class="form-label">Blood Group</label>
                 <select class="form-control" id="blood_group" name="blood_group" required>
                     <option value="">-- Select Blood Group --</option>
                     <option value="A+">A+</option>
@@ -31,8 +26,12 @@
                 </select>
             </div>
             <div class="mb-3">
-                <label for="email" class="form-label">Blood Group</label>
+                <label for="email" class="form-label">Email</label>
                 <input type="email" class="form-control" id="email" name="email" required>
+            </div>
+            <div class="mb-3">
+                <label for="mobile" class="form-label">Mobile Number</label>
+                <input type="tel" class="form-control" pattern="[0-9]{10}" maxlength="10" id="mobile" name="mobile" required>
             </div>
             <div class="mb-3">
                 <label for="password" class="form-label">Password</label>

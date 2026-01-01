@@ -12,4 +12,4 @@ class UserRegisterForm(forms.ModelForm):
 class ProfileForm(forms.ModelForm):
     class Meta:
         model = UserProfile
-        fields = ['blood_group', 'mobile', 'address']
+        fields = ['blood_group', 'mobile']

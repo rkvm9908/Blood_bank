@@ -12,7 +12,7 @@ class UserProfile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     blood_group = models.CharField(max_length=5, choices=BLOOD_GROUPS)
     mobile = models.CharField(max_length=15)
-    address = models.TextField()
+    
 
     def __str__(self):
         return self.user.username

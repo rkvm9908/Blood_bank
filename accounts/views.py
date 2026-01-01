@@ -2,26 +2,38 @@ from django.shortcuts import render, redirect
 from django.contrib.auth.models import User
 from django.contrib.auth import authenticate, login, logout
 from django.contrib import messages
+from .models import UserProfile
+
 
 def register_view(request):
     if request.method == 'POST':
-        username = request.POST['username']
-        email = request.POST['email']
-        BloodGroup = request.POST['blood_group']
-        password = request.POST['password']
-        confirm_password = request.POST['confirm_password']
+        username = request.POST.get('username')
+        email = request.POST.get('email')
+        password = request.POST.get('password')
+        confirm = request.POST.get('confirm_password')
+        blood_group = request.POST.get('blood_group')
+        mobile = request.POST.get('mobile')
 
-        if password != confirm_password:
-            messages.error(request, "Passwords do not match!")
+        if password != confirm:
+            messages.error(request, "Passwords do not match")
             return redirect('register')
 
         if User.objects.filter(username=username).exists():
-            messages.error(request, "Username already exists!")
+            messages.error(request, "Username already exists")
             return redirect('register')
 
-        user = User.objects.create_user(username=username, email=email, password=password,blood_group=BloodGroup)
-        user.save()
-        messages.success(request, "Registration successful! Please login.")
+        # ✅ ONLY user fields here
+        user = User.objects.create_user(
+            username=username,
+            email=email,
+            password=password
+        )
+        # ✅ Extra fields in profile
+        profile = user.userprofile
+        profile.blood_group = blood_group
+        profile.mobile = mobile
+        profile.save()
+        messages.success(request, "Registration successful. Please login.")
         return redirect('login')
 
     return render(request, 'accounts/register.html')
