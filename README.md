@@ -63,7 +63,7 @@ Blood_Bank_Management_System/
 │   ├── wsgi.py
 │   └── asgi.py
 │
-├── donor/
+├── accounts/
 │   ├── models.py
 │   ├── views.py
 │   ├── urls.py
